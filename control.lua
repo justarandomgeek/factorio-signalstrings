@@ -52,6 +52,11 @@ string_to_signals = function(str,extrasignals)
   local s = string.upper(str)
   local letters = {}
   local i=1
+
+  if #s>31 then
+    s=s:sub(1,31)
+  end
+
   while s do
     local c
     if #s > 1 then
