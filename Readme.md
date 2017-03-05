@@ -1,6 +1,10 @@
 ## SignalStrings
 
-This library provides common functions for handling strings on circuit networks.
+This library provides common functions for handling strings on circuit networks. Strings are expressed as a bitmask of where each letter appears, LSB on the left.
+"FOOBAR" = {signal-F=1,signal-O=6,signal-B=8,signal-A=16,signal-R=32}
 
-Currently, this provides converting between lua strings and circuit strings via
-`remote.call('signalstrings','string_to_signals',"FOOBAR")` and `remote.call('signalstrings','signals_to_string',signallist)`
+Strings may be converted to signals using `remote.call('signalstrings','string_to_signals',"FOOBAR")`, and optionally with extra data (in the form of Constant Combinator params to be prefixed) using `remote.call('signalstrings','string_to_signals',"FOOBAR", extrasignals)`. Strings are automatically converted to all-caps to ease conversion, and non-representable characters are discarded (leaving empty space).
+
+Signals may be converted back to a string using `remote.call('signalstrings','signals_to_string',signallist)`. Non-string data is discarded, and overlapped characters may produce malformed strings.
+
+Mods that add signals may register them for string conversions by calling `remote.call('signalstrings','register_signal','signal-name','X')` in their on_load and on_init events.

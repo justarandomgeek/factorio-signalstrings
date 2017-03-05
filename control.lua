@@ -1,4 +1,4 @@
---TODO: mechanism for other mods to offer signal/char mappings to be added. maybe more map to global?
+-- Mappings for vanilla signals. Mods may extend this list by calling register_signal in on_load|init
 local charmap={
   c2s={
     ["0"]='signal-0',["1"]='signal-1',["2"]='signal-2',["3"]='signal-3',["4"]='signal-4',
@@ -48,7 +48,7 @@ signals_to_string = function(signals)
   end
   return str
 end,
-string_to_signals = function(str)
+string_to_signals = function(str,extrasignals)
   local s = string.upper(str)
   local letters = {}
   local i=1
@@ -63,10 +63,22 @@ string_to_signals = function(str)
     i=i*2
   end
 
-  local signals = {}
+  local signals = extrasignals or {}
   for c,i in pairs(letters) do
     signals[#signals+1]={index=#signals+1,count=i,signal={name=charsig(c),type="virtual"}}
   end
   return signals
+end,
+register_signal = function(signame,sigchar)
+  -- map this signal to a character for signals_to_string conversions
+  charmap.s2c[signame]=sigchar
+
+  -- if this character was not previously mapped, map it to this signal. Only the first registered signal for a character will ever be used for string_to_signals conversions
+  if not charmap.c2s[sigchar] then charmap.c2s[sigchar]=signame end
+
+
+end,
+get_map = function()
+  return charmap
 end,
 })
