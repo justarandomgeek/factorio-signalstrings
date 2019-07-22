@@ -31,23 +31,41 @@ local function sigchar(c)
 	return charmap.s2c[c] or ''
 end
 
-remote.add_interface('signalstrings',
-{
-signals_to_string = function(signals)
-  local str=""
-  for i=0,30 do
-    local endOfString=true
-    for _,sig in pairs(signals) do
-      local sigbit = bit32.extract(sig.count,i)
-      if sig.signal.type=="virtual" and sigbit==1 then
-        endOfString=false
-        str=str .. sigchar(sig.signal.name)
+function signals_to_string(set)
+  local sigbits = {}
+  local bitsleft = -1
+  local lastbit = 0
+  for _,sig in ipairs(set) do
+    local newbits = bit32.band(sig.count,bitsleft)
+    if newbits ~= 0 then
+      for i=0,30 do
+        local sigbit = bit32.extract(newbits,i)
+        if sigbit==1 then
+          sigbits[i+1] = sigchar(sig.signal.name)
+          bitsleft = bit32.replace(bitsleft,0,i)
+          if lastbit < i then
+            lastbit = i 
+          end
+          if bitsleft == 0 then
+            return table.concat(sigbits)
+          end
+        end
       end
     end
-    if endOfString then break end
   end
-  return str
-end,
+
+  for i=0,lastbit do 
+    if sigbits[i] == nil then 
+      sigbits[i]  = " " 
+    end
+  end
+
+  return table.concat(sigbits)
+end
+
+remote.add_interface('signalstrings',
+{
+signals_to_string = signals_to_string,
 string_to_signals = function(str,extrasignals)
   local s = string.upper(str)
   local letters = {}
