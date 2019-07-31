@@ -27,11 +27,20 @@ local function charsig(c)
 	return charmap.c2s[c]
 end
 
-local function sigchar(c)
-	return charmap.s2c[c] or ''
+local function sigrichtag(signal)
+  if signal.type == "item" then
+    return "[item=" .. signal.name .. "]"
+  elseif signal.type == "fluid" then
+    return "[fluid=" .. signal.name .. "]"
+  end
+
 end
 
-function signals_to_string(set)
+local function sigchar(signal,userichtags)
+  return charmap.s2c[signal.name] or ( userichtags and sigrichtag(signal) or '')
+end
+
+function signals_to_string(set,userichtags)
   local sigbits = {}
   local bitsleft = -1
   local lastbit = 0
@@ -41,13 +50,16 @@ function signals_to_string(set)
       for i=0,30 do
         local sigbit = bit32.extract(newbits,i)
         if sigbit==1 then
-          sigbits[i+1] = sigchar(sig.signal.name)
-          bitsleft = bit32.replace(bitsleft,0,i)
-          if lastbit < i then
-            lastbit = i 
-          end
-          if bitsleft == 0 then
-            return table.concat(sigbits)
+          local ch = sigchar(sig.signal, userichtags)
+          if ch ~= '' then
+            sigbits[i+1] = ch
+            bitsleft = bit32.replace(bitsleft,0,i)
+            if lastbit < i then
+              lastbit = i 
+            end
+            if bitsleft == 0 then
+              return table.concat(sigbits)
+            end
           end
         end
       end
@@ -67,28 +79,38 @@ remote.add_interface('signalstrings',
 {
 signals_to_string = signals_to_string,
 string_to_signals = function(str,extrasignals)
-  local s = string.upper(str)
   local letters = {}
+  local tags = {}
   local i=1
 
-  if #s>31 then
-    s=s:sub(1,31)
-  end
-
-  while s do
+  while str and i < 0x100000000 do
     local c
-    if #s > 1 then
-      c,s=s:sub(1,1),s:sub(2)
+    local signal
+    if #str > 1 then
+      local _,taken,tag,item = str:find("^%[([%a-]+)=([^%[%]=]+)%]")
+      
+      if tag == "item" and game.item_prototypes[item] then
+        signal = {type="item",name = item}
+      elseif  tag == "fluid" and game.fluid_prototypes[item] then
+        signal = {type="fluid",name = item}
+      else
+        signal = nil
+        taken = 1
+      end
+      c,str=str:sub(1,taken):upper(),str:sub(taken+1)
+      
     else
-      c,s=s,nil
+      c,str=str,nil
     end
     letters[c]=(letters[c] or 0)+i
+    tags[c] = signal
     i=i*2
   end
 
   local signals = extrasignals or {}
   for c,i in pairs(letters) do
-    signals[#signals+1]={index=#signals+1,count=i,signal={name=charsig(c),type="virtual"}}
+    if i >= 0x80000000 then i =  i - 0x100000000 end
+    signals[#signals+1]={index=#signals+1,count=i,signal=tags[c] or {name=charsig(c),type="virtual"}}
   end
   return signals
 end,
