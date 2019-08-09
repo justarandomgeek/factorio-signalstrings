@@ -100,7 +100,7 @@ string_to_signals = function(str,extrasignals)
       c,str=str:sub(1,taken):upper(),str:sub(taken+1)
       
     else
-      c,str=str,nil
+      c,str=str:upper(),nil
     end
     letters[c]=(letters[c] or 0)+i
     tags[c] = signal
