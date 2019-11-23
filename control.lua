@@ -1,3 +1,5 @@
+pcall(require,'__coverage__/coverage.lua')
+
 -- Mappings for vanilla signals. Mods may extend this list by calling register_signal in on_load|init
 local charmap={
   c2s={
