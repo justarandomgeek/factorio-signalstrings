@@ -1,11 +1,11 @@
 {
   "name": "signalstrings",
-  "version": "0.17.3",
-  "factorio_version": "0.17",
+  "version": "0.18.0",
+  "factorio_version": "0.18",
   "title": "Signal Strings Library",
   "author": "justarandomgeek",
   "homepage": "",
   "contact": "justarandomgeek@gmail.com",
   "description": "A library for converting between lua strings and virtual signal strings",
-  "dependencies": ["base >= 0.17.0"]
+  "dependencies": ["base"]
 }

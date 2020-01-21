@@ -1,4 +1,5 @@
-pcall(require,'__coverage__/coverage.lua')
+if script.active_mods['coverage'] then require('__coverage__/coverage.lua') end
+if script.active_mods['debugadapter'] then require('__debugadapter__/debugadapter.lua') end
 
 -- Mappings for vanilla signals. Mods may extend this list by calling register_signal in on_load|init
 local charmap={
