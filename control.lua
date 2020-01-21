@@ -43,7 +43,7 @@ local function sigchar(signal,userichtags)
   return charmap.s2c[signal.name] or ( userichtags and sigrichtag(signal) or '')
 end
 
-function signals_to_string(set,userichtags)
+local function signals_to_string(set,userichtags)
   local sigbits = {}
   local bitsleft = -1
   local lastbit = 0
