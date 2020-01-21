@@ -68,7 +68,7 @@ function signals_to_string(set,userichtags)
     end
   end
 
-  for i=0,lastbit do 
+  for i=1,lastbit do 
     if sigbits[i] == nil then 
       sigbits[i]  = " " 
     end
