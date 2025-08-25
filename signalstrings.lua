@@ -76,15 +76,15 @@ local function signals_to_string(set)
   local bitsleft = -1
   local lastbit = 0
   for _,sig in pairs(set) do
-    local newbits = bit32.band(sig.count,bitsleft)
-    if newbits ~= 0 then
-      for i=0,30 do
-        local sigbit = bit32.extract(newbits,i)
-        if sigbit==1 then
-          local ch = sigchar(sig.signal)
-          if ch then
+    local ch = sigchar(sig.signal)
+    if ch then
+      local newbits = bit32.band(sig.count,bitsleft)
+      if newbits ~= 0 then
+        for i=0,31 do
+          local sigbit = bit32.extract(newbits,i)
+          if sigbit==1 then
             sigbits[i+1] = ch
-            bitsleft = bit32.replace(bitsleft,0,i) --[[@as integer]]
+            bitsleft = bit32.replace(bitsleft,0,i)--[[@as integer]]
             if lastbit < i then
               lastbit = i
             end
@@ -92,6 +92,8 @@ local function signals_to_string(set)
               return table.concat(sigbits)
             end
           end
+          newbits = bit32.replace(newbits, 0, i)--[[@as integer]]
+          if newbits == 0 then break end
         end
       end
     end
@@ -127,6 +129,7 @@ local function try_match_richtext(str,i)
   ---@cast tagname string
   ---@cast tagqual string
   local taginfo = richtag_types[tagtype]
+  if not taginfo then return end
   if not taginfo.protos[tagname] then return end
   if not prototypes.quality[tagqual] then return end
 
