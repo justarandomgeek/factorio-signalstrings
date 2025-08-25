@@ -1,3 +1,16 @@
+local prototypes = prototypes
+local script = script
+local pairs = pairs
+local bband = bit32.band
+local bextract = bit32.extract
+local breplace = bit32.replace
+local sbyte = string.byte
+local sformat = string.format
+local sfind = string.find
+local ssub = string.sub
+local tconcat = table.concat
+local _ENV = nil
+
 ---@alias typeinfo {type:SignalIDType, richtag:string?, richqual:boolean?, protos:LuaCustomTable<string>}
 
 ---@type table<SignalIDType, typeinfo>
@@ -63,9 +76,9 @@ local function sigchar(signal)
   if typeinfo then
     if typeinfo.richqual and signal.quality and signal.quality ~= "normal" then
       -- qual tag
-      return string.format("[%s=%s,quality=%s]", typeinfo.richtag, signal.name, signal.quality)
+      return sformat("[%s=%s,quality=%s]", typeinfo.richtag, signal.name, signal.quality)
     end
-    return string.format("[%s=%s]", typeinfo.richtag, signal.name)
+    return sformat("[%s=%s]", typeinfo.richtag, signal.name)
   end
 end
 
@@ -78,21 +91,21 @@ local function signals_to_string(set)
   for _,sig in pairs(set) do
     local ch = sigchar(sig.signal)
     if ch then
-      local newbits = bit32.band(sig.count,bitsleft)
+      local newbits = bband(sig.count,bitsleft)
       if newbits ~= 0 then
         for i=0,31 do
-          local sigbit = bit32.extract(newbits,i)
+          local sigbit = bextract(newbits,i)
           if sigbit==1 then
             sigbits[i+1] = ch
-            bitsleft = bit32.replace(bitsleft,0,i)--[[@as integer]]
+            bitsleft = breplace(bitsleft,0,i)--[[@as integer]]
             if lastbit < i then
               lastbit = i
             end
             if bitsleft == 0 then
-              return table.concat(sigbits)
+              return tconcat(sigbits)
             end
           end
-          newbits = bit32.replace(newbits, 0, i)--[[@as integer]]
+          newbits = breplace(newbits, 0, i)--[[@as integer]]
           if newbits == 0 then break end
         end
       end
@@ -105,7 +118,7 @@ local function signals_to_string(set)
     end
   end
 
-  return table.concat(sigbits)
+  return tconcat(sigbits)
 end
 
 ---@param str string
@@ -116,12 +129,12 @@ end
 local function try_match_richtext(str,i)
   local _,j,tagtype,tagname,tagqual
   if script.feature_flags.quality then
-    _,j,tagtype,tagname,tagqual = str:find("^%[([%a%-]+)=([%a%d%-_]+),quality=([%a%d%-_]+)%]", i)
+    _,j,tagtype,tagname,tagqual = sfind(str, "^%[([%a%-]+)=([%a%d%-_]+),quality=([%a%d%-_]+)%]", i)
   end
   
   if not tagtype then
     tagqual = "normal"
-    _,j,tagtype,tagname = str:find("^%[([%a%-]+)=([%a%d%-_]+)%]", i)
+    _,j,tagtype,tagname = sfind(str, "^%[([%a%-]+)=([%a%d%-_]+)%]", i)
   end
 
   if not tagtype then return end
@@ -139,7 +152,7 @@ local function try_match_richtext(str,i)
     name = tagname,
     quality = tagqual,
   }
-  return sig, str:sub(i,j), j+1
+  return sig, ssub(str,i,j), j+1
 end
 
 ---@generic T
@@ -156,7 +169,7 @@ local function string_to_Ts(str,signal_format)
     local l=#str
 
     while i<=l and b < 0x100000000 do
-      local c = str:sub(i,i)
+      local c = ssub(str,i,i)
       local j = i+1
       if c == "[" then
         local tagsig,tagstr,tagi = try_match_richtext(str, i)
@@ -167,8 +180,8 @@ local function string_to_Ts(str,signal_format)
           tagsigs[tagstr] = tagsig
           j = tagi
         end
-      elseif c:byte() >= 0x80 then
-        local _,uchari, uchar = str:find("^([\xC2-\xF4][\x80-\xBF]+)", i)
+      elseif sbyte(c) >= 0x80 then
+        local _,uchari, uchar = sfind(str, "^([\xC2-\xF4][\x80-\xBF]+)", i)
         if uchari then
           ---@cast uchar -?
           c = uchar
