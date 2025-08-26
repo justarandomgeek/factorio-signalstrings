@@ -112,7 +112,7 @@ local function signals_to_string(set)
     end
   end
 
-  for i=1,lastbit do
+  for i=1,(lastbit+1) do
     if sigbits[i] == nil then
       sigbits[i]  = " "
     end
@@ -158,14 +158,19 @@ end
 ---@generic T
 ---@param str string
 ---@param signal_format fun(signal:SignalID, value:integer):T
+---@param i? integer index in `str` to start
 ---@return T[]
-local function string_to_Ts(str,signal_format)
+---@return integer nexti next unconsumed character in `str`
+local function string_to_Ts(str,signal_format,i)
   local letters = {}
   local tagsigs = {}
 
+  if not i then
+    i=1
+  end
+
   do
     local b=1 -- bit position in output
-    local i=1 -- index in str
     local l=#str
 
     while i<=l and b < 0x100000000 do
@@ -204,7 +209,7 @@ local function string_to_Ts(str,signal_format)
     end
   end
 
-  return signals
+  return signals,i
 end
 
 ---@param signal SignalID
@@ -241,20 +246,26 @@ return {
   string_to_Ts = string_to_Ts,
 
   ---@param str string
+  ---@param i? integer
   ---@return LogisticFilter[]
-  string_to_logistic_filters = function(str)
-    return string_to_Ts(str, to_logistic_filter)
+  ---@return integer nexti
+  string_to_logistic_filters = function(str, i)
+    return string_to_Ts(str, to_logistic_filter, i)
   end,
 
   ---@param str string
+  ---@param i? integer
   ---@return DeciderCombinatorOutput[]
-  string_to_decider_outputs = function(str)
-    return string_to_Ts(str, to_decider_output)
+  ---@return integer nexti
+  string_to_decider_outputs = function(str, i)
+    return string_to_Ts(str, to_decider_output, i)
   end,
 
   ---@param str string
+  ---@param i? integer
   ---@return Signal[]
-  string_to_signals = function(str)
-    return string_to_Ts(str, to_signal)
+  ---@return integer nexti
+  string_to_signals = function(str, i)
+    return string_to_Ts(str, to_signal, i)
   end,
 }
