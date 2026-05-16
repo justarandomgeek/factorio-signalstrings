@@ -1,7 +1,8 @@
 local meld = require('meld')
 
 
----@type {[string]:SignalID}
+---@alias signalstrings-mapping {[string]:SignalID}
+---@type  signalstrings-mapping
 local sigmap = {
   ["0"]={ quality="normal", type="virtual", name='signal-0'},
   ["1"]={ quality="normal", type="virtual", name='signal-1'},

@@ -38,8 +38,7 @@ do
   end
 end
 
----@type {[string]:SignalID}
-local c2s=prototypes.mod_data["signalstrings-mapping"].data --[[@as {[string]:SignalID}]]
+local c2s=prototypes.mod_data["signalstrings-mapping"].data
 
 ---@type {[QualityID]:{[SignalIDType]:{[string]:string}}}
 local s2c={}
