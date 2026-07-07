@@ -1,4 +1,6 @@
-if not (__DebugAdapter or debugadapter) then return end
+---@namespace signalstrings
+
+if not debugadapter then return end
 
 local sigstr = require("__signalstrings__/signalstrings.lua")
 

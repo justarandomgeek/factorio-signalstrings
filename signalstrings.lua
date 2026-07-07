@@ -1,3 +1,5 @@
+---@namespace signalstrings
+
 local prototypes = prototypes
 local script = script
 local pairs = pairs
