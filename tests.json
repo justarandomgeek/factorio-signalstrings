@@ -1,0 +1,7 @@
+[
+    {
+        "name": "test",
+        "scenario": "signalstrings/test",
+        "ticks": 1
+    }
+]
