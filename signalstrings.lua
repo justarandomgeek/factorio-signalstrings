@@ -42,7 +42,7 @@ end
 
 local c2s=prototypes.mod_data["signalstrings-mapping"].data
 
----@type {[QualityID]:{[SignalIDType]:{[string]:string}}}
+---@type table<QualityID, table<SignalIDType, table<string, string>>>
 local s2c={}
 --TODO: validate the signal prototypes? or just let them fail later?
 for char, signal in pairs(c2s) do
@@ -163,7 +163,9 @@ end
 ---@return T[]
 ---@return integer nexti next unconsumed character in `str`
 local function string_to_Ts(str,signal_format,i)
+  ---@type table<string, uint32>
   local letters = {}
+  ---@type table<string, SignalID>
   local tagsigs = {}
 
   if not i then
@@ -204,6 +206,7 @@ local function string_to_Ts(str,signal_format,i)
   local signals = {}
   for c,b in pairs(letters) do
     if b >= 0x80000000 then b =  b - 0x100000000 end
+    ---@cast b int32
     local sig = tagsigs[c] or c2s[c]
     if sig then
       signals[#signals+1]=signal_format(sig, b)
